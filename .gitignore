@@ -1,0 +1,17 @@
+# Decompiled 10Micron vendor driver, used only as a local reference.
+# It is copyrighted vendor code: never commit or publish it.
+/10micron-driver-decompiled/
+
+# Vendor protocol document (keep local, do not redistribute).
+/docs/vendor/
+
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+*.log
+.DS_Store

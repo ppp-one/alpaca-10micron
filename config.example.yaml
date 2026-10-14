@@ -1,0 +1,31 @@
+# Copy this file to config.yaml and set mount.host.
+
+mount:
+  host: 192.168.1.11        # IP address (or host name) of the mount
+  port: 3490                # 3490 or 3492
+  io_timeout: 10.0          # seconds to wait for a reply before the link counts as broken
+  connect_timeout: 5.0      # seconds to wait for the TCP connection
+  poll_interval: 0.5        # seconds between position/status polls
+  site_poll_interval: 10.0  # seconds between site/guide-rate/refraction polls
+  reconnect_initial_delay: 1.0
+  reconnect_max_delay: 30.0
+
+server:
+  host: 0.0.0.0             # 127.0.0.1 = only programs on this PC can reach the driver
+  port: 11111
+  discovery: true           # answer Alpaca discovery broadcasts (UDP 32227)
+  discovery_port: 32227
+  location: ""              # free text, shown to clients (management API)
+
+device:
+  name: 10Micron mount
+  unique_id: ""             # empty: derived from mount.host and mount.port
+  connect_wait: 15.0        # seconds a Connect waits for the first link to the mount
+  allow_sync: false         # Sync changes the mount's alignment; off unless you need it
+  use_keypad_park_position: false  # true: park at the keypad park position, no SetPark
+  slew_timeout: 600.0       # seconds a synchronous slew may take
+  home_timeout: 600.0       # seconds FindHome may take
+  # Optional optics, in metres / square metres. Leave out if unknown.
+  # aperture_diameter: 0.4
+  # aperture_area: 0.11
+  # focal_length: 3.2

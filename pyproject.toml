@@ -1,0 +1,47 @@
+[build-system]
+build-backend = "uv_build"
+requires = ["uv_build>=0.8.4,<0.10.0"]
+
+[dependency-groups]
+dev = [
+  "ruff",
+  "pre-commit",
+  "pytest",
+  "httpx"
+]
+
+[project]
+authors = [
+  {name = "Peter Pedersen"}
+]
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "pyyaml",
+  "python-multipart"
+]
+description = "ASCOM Alpaca telescope driver for 10Micron mounts"
+keywords = ["astronomy", "telescope", "ascom", "alpaca", "10micron"]
+license = "MIT"
+name = "alpaca-10micron"
+readme = "README.md"
+requires-python = ">=3.11"
+version = "0.1.0"
+
+[project.scripts]
+alpaca-10micron = "alpaca_10micron.run:main"
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["tests"]
+
+[tool.ruff]
+exclude = ["uv.lock", "*.yaml"]
+line-length = 99
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+select = ["E", "F", "I001", "UP"]
+
+[tool.uv.build-backend]
+module-name = "alpaca_10micron"
