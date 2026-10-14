@@ -1,5 +1,8 @@
 # alpaca-10micron
 
+> [!WARNING]  
+> USE AT YOUR OWN RISK - UNTESTED ON A REAL MOUNT. See [docs/safety-review.md](docs/safety-review.md).
+
 An ASCOM Alpaca telescope driver for 10Micron mounts, written in Python with FastAPI.
 
 The driver talks to the mount over TCP (port 3490 or 3492) with the 10Micron command
