@@ -113,13 +113,21 @@ def test_management_api(client):
     assert "10Micron Alpaca driver" in client.get("/setup/v1/telescope/0/setup").text
 
 
-def test_parameter_names_are_not_case_sensitive(client):
+def test_parameter_name_casing(client):
+    # GET: names are not case-sensitive.
     assert get(client, "name", ClientTransactionID=42)["ClientTransactionID"] == 42
     assert get(client, "name", clienttransactionid=7)["ClientTransactionID"] == 7
     assert get(client, "name", CLIENTTRANSACTIONID="bad")["ClientTransactionID"] == 0
-    body = put(client, "connected", connected="true", clientid=3, ClientTransactionID=9)
-    assert body["ErrorNumber"] == 0 and body["ClientTransactionID"] == 9
+    # PUT: names in the body are case-sensitive (as ConformU checks).
+    response = client.put(f"{BASE}/connected", data={"connected": "true", "ClientID": 3})
+    assert response.status_code == 400
+    body = put(client, "connected", Connected="true", ClientID=3, clienttransactionid=9)
+    assert body["ErrorNumber"] == 0 and body["ClientTransactionID"] == 0
     assert value(client, "connected", client_id=3) is True
+    # A wrongly cased ClientID in a PUT is ignored, so this is client 0.
+    put(client, "connected", Connected="true", clientid=4)
+    assert value(client, "connected", client_id=0) is True
+    assert value(client, "connected", client_id=4) is False
 
 
 def test_server_transaction_ids_increase(client):
@@ -166,7 +174,7 @@ def test_read_only_values(client):
     assert value(client, "cansyncaltaz") is False
     assert value(client, "canfindhome") is False  # GCFG says "h": no homing sensors
     assert value(client, "cansetpierside") is True  # German mount
-    assert value(client, "axisrates", Axis=0) == [{"Minimum": 0.0, "Maximum": 15.0}]
+    assert value(client, "axisrates", Axis=0) == [{"Minimum": 1 / 3600, "Maximum": 15.0}]
     assert value(client, "axisrates", Axis=2) == []
     assert value(client, "canmoveaxis", Axis=1) is True
     assert value(client, "canmoveaxis", Axis=2) is False

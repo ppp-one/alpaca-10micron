@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Request
 
 from alpaca_10micron.api.common import connected_request
-from alpaca_10micron.device import TelescopeDevice
+from alpaca_10micron.device import MIN_AXIS_RATE, TelescopeDevice
 from alpaca_10micron.errors import INVALID_VALUE, VALUE_NOT_SET, AlpacaError, not_implemented
 from alpaca_10micron.models import (
     AlpacaResponse,
@@ -162,7 +162,7 @@ async def get_slewing(request: Request, device_number: str):
 @router.get("/siteelevation", response_model=DoubleResponse)
 async def get_siteelevation(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    return DoubleResponse(Value=telescope.site().elevation, **alpaca.ids())
+    return DoubleResponse(Value=telescope.site_elevation(), **alpaca.ids())
 
 
 @router.put("/siteelevation", response_model=AlpacaResponse)
@@ -175,7 +175,7 @@ async def set_siteelevation(request: Request, device_number: str):
 @router.get("/sitelatitude", response_model=DoubleResponse)
 async def get_sitelatitude(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    return DoubleResponse(Value=telescope.site().latitude, **alpaca.ids())
+    return DoubleResponse(Value=telescope.site_latitude(), **alpaca.ids())
 
 
 @router.put("/sitelatitude", response_model=AlpacaResponse)
@@ -188,7 +188,7 @@ async def set_sitelatitude(request: Request, device_number: str):
 @router.get("/sitelongitude", response_model=DoubleResponse)
 async def get_sitelongitude(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    return DoubleResponse(Value=telescope.site().longitude, **alpaca.ids())
+    return DoubleResponse(Value=telescope.site_longitude(), **alpaca.ids())
 
 
 @router.put("/sitelongitude", response_model=AlpacaResponse)
@@ -277,9 +277,10 @@ async def get_destinationsideofpier(request: Request, device_number: str):
 @router.get("/targetdeclination", response_model=DoubleResponse)
 async def get_targetdeclination(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    if telescope.target_declination is None:
+    target = telescope.target(alpaca.client_id, "dec")
+    if target is None:
         raise AlpacaError(VALUE_NOT_SET, "TargetDeclination has not been set")
-    return DoubleResponse(Value=telescope.target_declination, **alpaca.ids())
+    return DoubleResponse(Value=target, **alpaca.ids())
 
 
 @router.put("/targetdeclination", response_model=AlpacaResponse)
@@ -288,16 +289,17 @@ async def set_targetdeclination(request: Request, device_number: str):
     value = alpaca.get_float("TargetDeclination")
     if not -90 <= value <= 90:
         raise AlpacaError(INVALID_VALUE, f"TargetDeclination {value} is outside -90..90")
-    telescope.target_declination = value
+    telescope.set_target(alpaca.client_id, "dec", value)
     return AlpacaResponse(**alpaca.ids())
 
 
 @router.get("/targetrightascension", response_model=DoubleResponse)
 async def get_targetrightascension(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    if telescope.target_right_ascension is None:
+    target = telescope.target(alpaca.client_id, "ra")
+    if target is None:
         raise AlpacaError(VALUE_NOT_SET, "TargetRightAscension has not been set")
-    return DoubleResponse(Value=telescope.target_right_ascension, **alpaca.ids())
+    return DoubleResponse(Value=target, **alpaca.ids())
 
 
 @router.put("/targetrightascension", response_model=AlpacaResponse)
@@ -306,7 +308,7 @@ async def set_targetrightascension(request: Request, device_number: str):
     value = alpaca.get_float("TargetRightAscension")
     if not 0 <= value < 24:
         raise AlpacaError(INVALID_VALUE, f"TargetRightAscension {value} is outside 0..24")
-    telescope.target_right_ascension = value
+    telescope.set_target(alpaca.client_id, "ra", value)
     return AlpacaResponse(**alpaca.ids())
 
 
@@ -317,7 +319,7 @@ async def set_targetrightascension(request: Request, device_number: str):
 async def slewtocoordinates(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
     await telescope.slew_to_coordinates(
-        alpaca.get_float("RightAscension"), alpaca.get_float("Declination")
+        alpaca.get_float("RightAscension"), alpaca.get_float("Declination"), alpaca.client_id
     )
     return AlpacaResponse(**alpaca.ids())
 
@@ -326,7 +328,7 @@ async def slewtocoordinates(request: Request, device_number: str):
 async def slewtocoordinatesasync(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
     await telescope.slew_to_coordinates_async(
-        alpaca.get_float("RightAscension"), alpaca.get_float("Declination")
+        alpaca.get_float("RightAscension"), alpaca.get_float("Declination"), alpaca.client_id
     )
     return AlpacaResponse(**alpaca.ids())
 
@@ -334,14 +336,14 @@ async def slewtocoordinatesasync(request: Request, device_number: str):
 @router.put("/slewtotarget", response_model=AlpacaResponse)
 async def slewtotarget(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    await telescope.slew_to_target()
+    await telescope.slew_to_target(alpaca.client_id)
     return AlpacaResponse(**alpaca.ids())
 
 
 @router.put("/slewtotargetasync", response_model=AlpacaResponse)
 async def slewtotargetasync(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    await telescope.slew_to_target_async()
+    await telescope.slew_to_target_async(alpaca.client_id)
     return AlpacaResponse(**alpaca.ids())
 
 
@@ -373,7 +375,7 @@ async def abortslew(request: Request, device_number: str):
 async def synctocoordinates(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
     await telescope.sync_to_coordinates(
-        alpaca.get_float("RightAscension"), alpaca.get_float("Declination")
+        alpaca.get_float("RightAscension"), alpaca.get_float("Declination"), alpaca.client_id
     )
     return AlpacaResponse(**alpaca.ids())
 
@@ -381,7 +383,7 @@ async def synctocoordinates(request: Request, device_number: str):
 @router.put("/synctotarget", response_model=AlpacaResponse)
 async def synctotarget(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
-    await telescope.sync_to_target()
+    await telescope.sync_to_target(alpaca.client_id)
     return AlpacaResponse(**alpaca.ids())
 
 
@@ -430,7 +432,7 @@ async def get_axisrates(request: Request, device_number: str):
     alpaca, telescope = await connected_request(request, device_number)
     axis = _enum(alpaca, "Axis", TelescopeAxes)
     limit = telescope.axis_rate_limit(axis)
-    rates = [Rate(Minimum=0.0, Maximum=limit)] if limit > 0 else []
+    rates = [Rate(Minimum=MIN_AXIS_RATE, Maximum=limit)] if limit > 0 else []
     return RateArrayResponse(Value=rates, **alpaca.ids())
 
 

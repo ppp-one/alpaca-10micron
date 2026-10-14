@@ -117,6 +117,8 @@ GUIDE_LETTERS = {
     GuideDirections.EAST: "e",
     GuideDirections.WEST: "w",
 }
+# MoveAxis: the lowest rate offered in AxisRates (1 arcsec/s). 0 stops the axis.
+MIN_AXIS_RATE = 1 / 3600
 # MoveAxis: (letter for a negative rate, letter for a positive rate), as the vendor driver.
 AXIS_LETTERS = {TelescopeAxes.PRIMARY: ("e", "w"), TelescopeAxes.SECONDARY: ("s", "n")}
 STOP_ALL_AXES = ":Qe#:Qw#:Qn#:Qs#"
@@ -144,8 +146,9 @@ class TelescopeDevice:
         self._connected: set[int] = set()
         self._connecting: dict[int, asyncio.Task] = {}
         self._connect_errors: dict[int, str] = {}
-        self.target_right_ascension: float | None = None
-        self.target_declination: float | None = None
+        # TargetRightAscension/TargetDeclination per ClientID, so one program's target is
+        # never used by another program's SlewToTarget or SyncToTarget.
+        self._targets: dict[int, dict[str, float]] = {}
         # Motion state kept by the driver.
         self._slew_grace_until = 0.0
         self._pulse_until = 0.0
@@ -158,6 +161,8 @@ class TelescopeDevice:
         self._tracking_rate: DriveRates | None = None  # None: not set by a client yet
         self._ra_rate = 0.0  # seconds of RA per sidereal second (ASCOM units)
         self._dec_rate = 0.0  # arcseconds per SI second
+        # Site values as the client set them, see _site_value().
+        self._site_values: dict[str, float] = {}
 
     # --- Connection management ---
 
@@ -176,6 +181,10 @@ class TelescopeDevice:
         if client_id in self._connected or client_id in self._connecting:
             return
         self._connect_errors.pop(client_id, None)
+        # ASCOM: a new connection starts without targets (reading them gives an error).
+        self._targets.pop(client_id, None)
+        if not self.mount.running:
+            self._site_values.clear()
         self.mount.start()
         self._connecting[client_id] = asyncio.create_task(self._finish_connect(client_id))
 
@@ -214,6 +223,7 @@ class TelescopeDevice:
             task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await task
+        self._targets.pop(client_id, None)
         if client_id in self._connected:
             self._connected.discard(client_id)
             logger.info("Client %d disconnected", client_id)
@@ -349,6 +359,10 @@ class TelescopeDevice:
 
     def slewing(self) -> bool:
         ginfo = self.state().ginfo
+        if self._home_task is not None and not self._home_task.done():
+            # FindHome is asynchronous: it ends when the result is known, so AtHome is
+            # already correct when Slewing turns False.
+            return True
         if self._mount_moving(ginfo):
             # The mount reports the movement itself; from now on follow the mount, so
             # Slewing turns False as soon as the movement ends.
@@ -468,10 +482,18 @@ class TelescopeDevice:
 
     # --- Slews (review 3.2 to 3.5) ---
 
-    async def slew_to_coordinates_async(self, ra: float, dec: float) -> None:
+    def target(self, client_id: int, name: str) -> float | None:
+        """``name`` is "ra" or "dec"."""
+        return self._targets.get(client_id, {}).get(name)
+
+    def set_target(self, client_id: int, name: str, value: float) -> None:
+        self._targets.setdefault(client_id, {})[name] = value
+
+    async def slew_to_coordinates_async(self, ra: float, dec: float, client_id: int = 0) -> None:
         _check_range("RightAscension", ra, 0, 24, high_open=True)
         _check_range("Declination", dec, -90, 90)
-        self.target_right_ascension, self.target_declination = ra, dec
+        self.set_target(client_id, "ra", ra)
+        self.set_target(client_id, "dec", dec)
         async with self._session() as session:
             state = await session.refresh_state()
             self._check_can_move(state)
@@ -483,22 +505,23 @@ class TelescopeDevice:
             await self._after_motion(session)
         logger.info("Slewing to RA %.5f h, Dec %+.5f deg", ra, dec)
 
-    async def slew_to_coordinates(self, ra: float, dec: float) -> None:
-        await self.slew_to_coordinates_async(ra, dec)
+    async def slew_to_coordinates(self, ra: float, dec: float, client_id: int = 0) -> None:
+        await self.slew_to_coordinates_async(ra, dec, client_id)
         await self._wait_for_slew_end()
 
-    def _target(self) -> tuple[float, float]:
-        if self.target_right_ascension is None or self.target_declination is None:
+    def _target(self, client_id: int) -> tuple[float, float]:
+        ra, dec = self.target(client_id, "ra"), self.target(client_id, "dec")
+        if ra is None or dec is None:
             raise AlpacaError(
                 INVALID_OPERATION, "TargetRightAscension and TargetDeclination must be set first"
             )
-        return self.target_right_ascension, self.target_declination
+        return ra, dec
 
-    async def slew_to_target_async(self) -> None:
-        await self.slew_to_coordinates_async(*self._target())
+    async def slew_to_target_async(self, client_id: int = 0) -> None:
+        await self.slew_to_coordinates_async(*self._target(client_id), client_id)
 
-    async def slew_to_target(self) -> None:
-        await self.slew_to_coordinates(*self._target())
+    async def slew_to_target(self, client_id: int = 0) -> None:
+        await self.slew_to_coordinates(*self._target(client_id), client_id)
 
     async def slew_to_alt_az_async(self, azimuth: float, altitude: float) -> None:
         _check_range("Azimuth", azimuth, 0, 360, high_open=True)
@@ -553,14 +576,19 @@ class TelescopeDevice:
                 INVALID_VALUE, "MoveAxis supports only the primary and secondary axes"
             )
         limit = self.axis_rate_limit(axis)
-        if abs(rate) > limit:
-            raise AlpacaError(INVALID_VALUE, f"Rate {rate} deg/s is outside -{limit}..{limit}")
+        if abs(rate) > limit or 0 < abs(rate) < MIN_AXIS_RATE:
+            raise AlpacaError(
+                INVALID_VALUE,
+                f"Rate {rate} deg/s is not 0 and not within {MIN_AXIS_RATE:.6f}..{limit}",
+            )
         negative, positive = AXIS_LETTERS[axis]
         async with self._session() as session:
             state = await session.refresh_state()
             self._active_moving_axes()
+            if state.ginfo.status == MountStatus.PARKED:
+                raise AlpacaError(INVALID_WHILE_PARKED, "The mount is parked")
             if rate == 0:
-                # Stopping is always allowed.
+                # Stopping is always allowed, also in an unsafe mount status.
                 await session.send(f":Q{negative}#:Q{positive}#", Reply.NONE)
                 self._moving_axes.pop(axis, None)
                 if not self._moving_axes:
@@ -640,12 +668,13 @@ class TelescopeDevice:
 
     # --- Sync (review 3.9) ---
 
-    async def sync_to_coordinates(self, ra: float, dec: float) -> None:
+    async def sync_to_coordinates(self, ra: float, dec: float, client_id: int = 0) -> None:
         if not self.config.allow_sync:
             raise not_implemented("Sync (enable it with device.allow_sync in the configuration)")
         _check_range("RightAscension", ra, 0, 24, high_open=True)
         _check_range("Declination", dec, -90, 90)
-        self.target_right_ascension, self.target_declination = ra, dec
+        self.set_target(client_id, "ra", ra)
+        self.set_target(client_id, "dec", dec)
         async with self._session() as session:
             state = await session.refresh_state()
             self._check_can_move(state)
@@ -664,10 +693,10 @@ class TelescopeDevice:
             await session.refresh_state()
         logger.info("Synced to RA %.5f h, Dec %+.5f deg", ra, dec)
 
-    async def sync_to_target(self) -> None:
+    async def sync_to_target(self, client_id: int = 0) -> None:
         if not self.config.allow_sync:
             raise not_implemented("Sync (enable it with device.allow_sync in the configuration)")
-        await self.sync_to_coordinates(*self._target())
+        await self.sync_to_coordinates(*self._target(client_id), client_id)
 
     # --- Park, unpark, home (review 3.10) ---
 
@@ -787,6 +816,9 @@ class TelescopeDevice:
 
     async def set_tracking_rate(self, rate: DriveRates) -> None:
         self._tracking_rate = rate
+        if rate != DriveRates.SIDEREAL:
+            # ASCOM: RA/Dec rate offsets apply only to sidereal tracking.
+            self._ra_rate = self._dec_rate = 0.0
         await self._apply_rates()
 
     def ra_rate(self) -> float:
@@ -795,11 +827,19 @@ class TelescopeDevice:
     def dec_rate(self) -> float:
         return self._dec_rate
 
+    async def _check_offsets_allowed(self, name: str, value: float) -> None:
+        if value != 0 and await self.tracking_rate() != DriveRates.SIDEREAL:
+            raise AlpacaError(
+                INVALID_OPERATION, f"{name} can only be set while TrackingRate is sidereal"
+            )
+
     async def set_ra_rate(self, value: float) -> None:
+        await self._check_offsets_allowed("RightAscensionRate", value)
         self._ra_rate = value
         await self._apply_rates()
 
     async def set_dec_rate(self, value: float) -> None:
+        await self._check_offsets_allowed("DeclinationRate", value)
         self._dec_rate = value
         await self._apply_rates()
 
@@ -851,18 +891,43 @@ class TelescopeDevice:
             _expect_one(await session.send(command, Reply.CHAR), command, refused)
             await session.refresh_site()
 
+    def _site_value(self, name: str, mount_value: float, tolerance: float) -> float:
+        """The value the client set, while the mount still reports it within its precision.
+
+        The mount stores 0.1" (or 0.1 m), so a value read back differs a little from the
+        value written. Like the vendor driver does for targets, return the client's value
+        while the difference is only this rounding.
+        """
+        client_value = self._site_values.get(name)
+        if client_value is not None and abs(client_value - mount_value) <= tolerance:
+            return client_value
+        return mount_value
+
+    def site_latitude(self) -> float:
+        return self._site_value("latitude", self.site().latitude, 0.15 / 3600)
+
+    def site_longitude(self) -> float:
+        return self._site_value("longitude", self.site().longitude, 0.15 / 3600)
+
+    def site_elevation(self) -> float:
+        return self._site_value("elevation", self.site().elevation, 0.06)
+
     async def set_site_latitude(self, value: float) -> None:
         _check_range("SiteLatitude", value, -90, 90)
         await self._set_site_value(f":St{format_declination(value)}#", "Latitude refused")
+        self._site_values["latitude"] = value
 
     async def set_site_longitude(self, value: float) -> None:
         _check_range("SiteLongitude", value, -180, 180)
         # The mount counts east longitudes as negative.
         await self._set_site_value(f":Sg{format_longitude(-value)}#", "Longitude refused")
+        self._site_values["longitude"] = value
 
     async def set_site_elevation(self, value: float) -> None:
-        _check_range("SiteElevation", value, -1000, 9999.9)
+        # ASCOM allows -300..10000 m; the mount allows -1000..9999.9 m.
+        _check_range("SiteElevation", value, -300, 9999.9)
         await self._set_site_value(f":Sev{format_elevation(value)}#", "Elevation refused")
+        self._site_values["elevation"] = value
 
     async def set_utc_date(self, moment: datetime) -> None:
         julian_date = datetime_to_julian_date(moment)

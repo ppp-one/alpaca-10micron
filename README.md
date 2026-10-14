@@ -15,6 +15,9 @@ vendor's COM driver, the same failure crashes the driver process (`0x800706BA`).
 rates, site, date and refraction settings, meridian flip (SideOfPier) and
 DestinationSideOfPier all work. Sync is off unless you turn it on (see Configuration).
 
+It passes **ConformU 4.5.0** (the ASCOM conformance checker) against the simulated mount
+with no errors, warnings or issues; see [docs/conformu/](docs/conformu/).
+
 **Before you use it at night**, do the daylight checks in
 [docs/safety-review.md, section 6](docs/safety-review.md#6-verify-on-the-real-mount),
 and run ConformU against the mount.
@@ -99,6 +102,13 @@ The rules, and how the vendor driver compares, are in
 uv sync
 uv run pytest
 uv run ruff check . && uv run ruff format --check .
+```
+
+The fake mount also runs on its own, in a realistic mode (PC clock, computed sidereal time
+and Alt/Az). Use it to try a client or to run ConformU without hardware:
+
+```bash
+uv run python tests/fake_mount.py --port 3490 --homing
 ```
 
 The tests use a fake mount (`tests/fake_mount.py`) and need no hardware. It simulates

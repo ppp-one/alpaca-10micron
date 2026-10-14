@@ -192,7 +192,7 @@ clients run on the same PC.
 
 | Requirement | Status |
 |---|---|
-| Parameter names not case-sensitive; PUT body before query string | **Done** (tested) |
+| Parameter names: not case-sensitive in GET query strings, case-sensitive in PUT bodies (the rule ConformU checks; the general text of the API description is too broad) | **Done** (tested; ConformU protocol check: 0 issues) |
 | ClientTransactionID echoed; missing or invalid counts as 0 | **Done** (tested) |
 | ServerTransactionID increases, unsigned 32-bit, never 0 | **Done** (tested) |
 | ASCOM errors as HTTP 200 with ErrorNumber/ErrorMessage | **Done** (tested) |
@@ -200,20 +200,24 @@ clients run on the same PC.
 | Every telescope and common endpoint in the Alpaca spec exists | **Done** (tested against `AlpacaDeviceAPI_v1.yaml`) |
 | InterfaceVersion 4 with Connect, Disconnect, Connecting, DeviceState | **Done** (tested) |
 | DriverVersion "n.n" | **Done** (tested) |
-| NotConnected for all members except identity and connection members | **Done** (tested); confirm with ConformU |
-| A failed async Connect is reported (here: Connecting raises the error once) | **Done** (tested); confirm with ConformU |
+| NotConnected for all members except identity and connection members | **Done** (tested, ConformU) |
+| A failed async Connect is reported (here: Connecting raises the error once) | **Done** (tested) |
 | `Can*` flags match the implemented members (sync, homing, set park and set pier side depend on the configuration and the mount) | **Done** (tested) |
 | AxisRates: one range 0..slew rate for axes 0 and 1, empty for axis 2; invalid axis gives InvalidValue | **Done** (tested) |
 | InvalidValue for out-of-range coordinates, rates, durations, enums and site values | **Done** (tested) |
 | InvalidWhileParked for motion while parked | **Done** (tested) |
-| Park, Unpark and FindHome asynchronous, with Slewing True while they run | **Done** (tested); confirm with ConformU |
-| RightAscensionRate/DeclinationRate combined with a non-sidereal TrackingRate (allowed here, as in the vendor driver) | Confirm with ConformU |
+| Park, Unpark and FindHome asynchronous, with Slewing True while they run (FindHome until AtHome is known) | **Done** (tested, ConformU) |
+| RightAscensionRate/DeclinationRate only with sidereal TrackingRate; selecting another rate resets them to 0 (stricter than the vendor driver; ConformU requires it) | **Done** (tested, ConformU) |
+| TargetRightAscension/TargetDeclination kept per ClientID, unset at each new connection | **Done** (tested, ConformU) |
+| SiteLatitude/SiteLongitude/SiteElevation round-trip exactly; SiteElevation -300..9999.9 m | **Done** (tested, ConformU) |
+| MoveAxis while parked gives InvalidWhileParked, also for rate 0; AxisRates minimum 1"/s | **Done** (tested, ConformU) |
 | TrackingRates contains sidereal and the current TrackingRate | **Done** (tested) |
 | UTCDate as ISO 8601 UTC with "Z" | **Done** (tested) |
 | Target RA/Dec: ValueNotSet before they are set; range checks | **Done** (tested) |
 | Management API and setup pages | **Done** (tested) |
 | Discovery on UDP 32227 | **Done** (IPv4 tested; IPv6 not implemented) |
-| ConformU conformance run | **Not done yet** (stage 3) |
+| ConformU 4.5.0 against the simulator (`tests/fake_mount.py`, realistic mode) | **Passed**: Alpaca protocol check 0 errors, 0 issues; conformance check "no errors, warnings or issues found", all members within target response times. Logs in `docs/conformu/`. |
+| ConformU against the real mount | **Not done yet** (section 6) |
 
 ## 5. Vendor features left out on purpose
 

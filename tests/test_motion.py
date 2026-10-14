@@ -242,8 +242,8 @@ def test_gm4000_ra_axis_limit(settings, fake_mount):
     fake_mount.state.product = "10micron GM4000HPS"
     with make_client(settings) as client:
         connect(client)
-        assert value(client, "axisrates", Axis=0) == [{"Minimum": 0.0, "Maximum": 11.25}]
-        assert value(client, "axisrates", Axis=1) == [{"Minimum": 0.0, "Maximum": 15.0}]
+        assert value(client, "axisrates", Axis=0) == [{"Minimum": 1 / 3600, "Maximum": 11.25}]
+        assert value(client, "axisrates", Axis=1) == [{"Minimum": 1 / 3600, "Maximum": 15.0}]
 
 
 def test_moving_axis_is_stopped_on_the_next_link(client, fake_mount):
@@ -420,3 +420,58 @@ def test_get_members_still_need_connection(settings):
     with make_client(settings) as client:
         assert error(get(client, "slewing", ClientID=9)) == 0x407
         assert error(put(client, "park", ClientID=9)) == 0x407
+
+
+# --- Findings from the first ConformU run ---
+
+
+def test_rate_offsets_only_with_sidereal_tracking(client):
+    put(client, "rightascensionrate", RightAscensionRate=0.1, ClientID=1)
+    put(client, "trackingrate", TrackingRate=1, ClientID=1)  # lunar resets the offsets
+    assert value(client, "rightascensionrate") == 0.0
+    body = put(client, "rightascensionrate", RightAscensionRate=0.1, ClientID=1)
+    assert error(body) == INVALID_OPERATION
+    body = put(client, "declinationrate", DeclinationRate=1.0, ClientID=1)
+    assert error(body) == INVALID_OPERATION
+    assert error(put(client, "declinationrate", DeclinationRate=0, ClientID=1)) == 0
+
+
+def test_targets_are_reset_for_a_new_session(client):
+    put(client, "targetrightascension", TargetRightAscension=3.0, ClientID=1)
+    put(client, "connected", Connected="False", ClientID=1)  # last client: session ends
+    connect(client)
+    assert error(get(client, "targetrightascension", ClientID=1)) == 0x402
+
+
+def test_site_values_round_trip_exactly(client):
+    put(client, "sitelongitude", SiteLongitude=18.54, ClientID=1)
+    assert value(client, "sitelongitude") == 18.54
+    put(client, "sitelatitude", SiteLatitude=-33.123456, ClientID=1)
+    assert value(client, "sitelatitude") == -33.123456
+    assert error(put(client, "siteelevation", SiteElevation=-301, ClientID=1)) == INVALID_VALUE
+
+
+def test_move_axis_minimum_rate_and_parked_stop(client):
+    assert error(put(client, "moveaxis", Axis=0, Rate=0.0001, ClientID=1)) == INVALID_VALUE
+    put(client, "park", ClientID=1)
+    assert wait_until(lambda: value(client, "atpark") is True, 3)
+    assert error(put(client, "moveaxis", Axis=0, Rate=0, ClientID=1)) == INVALID_WHILE_PARKED
+
+
+def test_find_home_slewing_ends_with_athome_true(settings, fake_mount):
+    fake_mount.state.gcfg = "E,G,N,H"
+    with make_client(settings) as client:
+        connect(client)
+        put(client, "findhome", ClientID=1)
+        assert wait_until(lambda: not_slewing(client), 5)
+        assert value(client, "athome") is True  # no gap between the two
+
+
+def test_targets_are_per_client(client):
+    connect(client, client_id=2)
+    put(client, "targetrightascension", TargetRightAscension=3.0, ClientID=1)
+    put(client, "targetdeclination", TargetDeclination=10.0, ClientID=1)
+    # Client 2 cannot read or use client 1's target.
+    assert error(get(client, "targetrightascension", ClientID=2)) == 0x402
+    assert error(put(client, "slewtotargetasync", ClientID=2)) == INVALID_OPERATION
+    assert value(client, "targetrightascension", client_id=1) == 3.0

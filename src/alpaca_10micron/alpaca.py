@@ -1,8 +1,13 @@
 """Request handling shared by all Alpaca endpoints.
 
-Alpaca parameter names are not case-sensitive ("ClientID", "clientid" and "CLIENTID" are
-the same), so parameters are read here from the query string (GET) or the form body
-(PUT) with lower-case keys, instead of through FastAPI's Query()/Form() binding.
+Parameter name casing, as ConformU checks it:
+
+- GET: names in the query string are not case-sensitive ("ClientID", "clientid" and
+  "CLIENTID" are the same).
+- PUT: names in the form body are case-sensitive. A wrongly cased value parameter counts
+  as missing (HTTP 400), and a wrongly cased ClientID/ClientTransactionID is ignored.
+
+So parameters are read here, instead of through FastAPI's Query()/Form() binding.
 """
 
 import itertools
@@ -35,9 +40,10 @@ def _uint32_or_zero(text: str | None) -> int:
 
 @dataclass(frozen=True)
 class AlpacaRequest:
-    params: dict[str, str]  # keys in lower case
+    params: dict[str, str]  # GET: keys in lower case; PUT: keys exactly as sent
     client_id: int
     client_transaction_id: int
+    case_sensitive: bool = False  # True for PUT
 
     def ids(self) -> dict[str, int]:
         """The transaction fields for a response."""
@@ -47,7 +53,7 @@ class AlpacaRequest:
         }
 
     def get(self, name: str) -> str:
-        value = self.params.get(name.lower())
+        value = self.params.get(name if self.case_sensitive else name.lower())
         if value is None:
             raise BadRequest(f"Missing parameter '{name}'")
         return value
@@ -78,19 +84,23 @@ class AlpacaRequest:
 
 async def read_request(request: Request) -> AlpacaRequest:
     """Parse the Alpaca parameters and remember them for the error handlers."""
-    items = []
-    if request.method == "PUT":
-        # PUT parameters belong in the body; the body wins over the query string.
-        form = await request.form()
-        items += [(key, value) for key, value in form.multi_items() if isinstance(value, str)]
-    items += request.query_params.multi_items()
     params: dict[str, str] = {}
-    for key, value in items:
-        params.setdefault(key.lower(), value)
+    if request.method == "PUT":
+        # PUT parameters belong in the body, with exact names.
+        form = await request.form()
+        for key, value in form.multi_items():
+            if isinstance(value, str):
+                params.setdefault(key, value)
+        client_id, transaction_id = params.get("ClientID"), params.get("ClientTransactionID")
+    else:
+        for key, value in request.query_params.multi_items():
+            params.setdefault(key.lower(), value)
+        client_id, transaction_id = params.get("clientid"), params.get("clienttransactionid")
     alpaca = AlpacaRequest(
         params=params,
-        client_id=_uint32_or_zero(params.get("clientid")),
-        client_transaction_id=_uint32_or_zero(params.get("clienttransactionid")),
+        client_id=_uint32_or_zero(client_id),
+        client_transaction_id=_uint32_or_zero(transaction_id),
+        case_sensitive=request.method == "PUT",
     )
     request.state.alpaca = alpaca
     return alpaca

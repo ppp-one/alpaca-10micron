@@ -1,0 +1,182 @@
+15:35:21.409 Check Alpaca Protocol - Conform Universal 4.5.0 (Build 53834.49ab847) 
+15:35:21.410                                     
+15:35:21.410 Test Telescope device:  - 127.0.0.1:11112 through URL: http://127.0.0.1:11112 
+15:35:21.410                                     
+15:35:21.414 OK messages are suppressed, they can be enabled through the Alpaca and COM settings page. 
+15:35:21.414                                     
+15:35:21.414 Connecting to device...             
+15:35:21.460                                     
+15:35:21.460 Successfully connected to device, disconnecting in order to test that connection using a different PUT parameter order is successful... 
+15:35:21.463                                     
+15:35:21.463 Successfully disconnected from device, re-connecting using re-ordered PUT parameters... 
+15:35:21.463                                     
+15:35:21.467 Successfully connected to device using re-ordered PUT parameters, testing device... 
+15:35:21.468                                     
+15:35:21.472 Device exposes interface version 4  
+15:35:21.558 GET DeviceState                     INFO     ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:21.558 GET DeviceState                     INFO     ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:21.559 GET DeviceState                     INFO     ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:21.560 GET DeviceState                     INFO     ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.871 PUT FindHome                        INFO     Good ID name casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.873 PUT FindHome                        INFO     Good ID casing + extra parameter - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.875 PUT FindHome                        INFO     Bad ClientID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.881 PUT FindHome                        INFO     Bad ClientTransactionID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.886 PUT FindHome                        INFO     ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.888 PUT FindHome                        INFO     ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.890 PUT FindHome                        INFO     ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.892 PUT FindHome                        INFO     ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.895 PUT FindHome                        INFO     ClientTransactionID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.897 PUT FindHome                        INFO     ClientTransactionID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.899 PUT FindHome                        INFO     ClientTransactionID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:35:23.901 PUT FindHome                        INFO     ClientTransactionID is a string - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.106 PUT SlewToAltAzAsync                INFO     Parameters Azimuth and Altitude (Good casing) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.108 PUT SlewToAltAzAsync                INFO     Parameters Azimuth and Altitude (Good casing with extra parameter) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.114 PUT SlewToAltAzAsync                INFO     Bad ClientID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.115 PUT SlewToAltAzAsync                INFO     Bad ClientTransactionID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.117 PUT SlewToAltAzAsync                INFO     ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.117 PUT SlewToAltAzAsync                INFO     ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.118 PUT SlewToAltAzAsync                INFO     ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.119 PUT SlewToAltAzAsync                INFO     ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.120 PUT SlewToAltAzAsync                INFO     ClientTransactionID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.120 PUT SlewToAltAzAsync                INFO     ClientTransactionID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.121 PUT SlewToAltAzAsync                INFO     ClientTransactionID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.122 PUT SlewToAltAzAsync                INFO     ClientTransactionID is a string - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.124 PUT SlewToAltAz                     INFO     Parameters Azimuth and Altitude (Good casing) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.126 PUT SlewToAltAz                     INFO     Parameters Azimuth and Altitude (Good casing with extra parameter) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.131 PUT SlewToAltAz                     INFO     Bad ClientID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.132 PUT SlewToAltAz                     INFO     Bad ClientTransactionID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.133 PUT SlewToAltAz                     INFO     ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.134 PUT SlewToAltAz                     INFO     ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.135 PUT SlewToAltAz                     INFO     ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.136 PUT SlewToAltAz                     INFO     ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.136 PUT SlewToAltAz                     INFO     ClientTransactionID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.137 PUT SlewToAltAz                     INFO     ClientTransactionID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.138 PUT SlewToAltAz                     INFO     ClientTransactionID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.138 PUT SlewToAltAz                     INFO     ClientTransactionID is a string - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error:
+15:36:17.151                                     
+15:36:17.155                                     
+15:36:17.156 Successfully disconnected from device. 
+15:36:17.156                                     
+15:36:17.156 Found 0 errors, 0 issues and 40 information messages. 
+15:36:17.156                                     
+15:36:17.156 Information Message Summary         
+15:36:17.156 GET DeviceState ==> ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a NotConnected error (0x00000407) for client transaction: 67890, server transaction: 95. Error message: The telescope is not connected
+ 
+15:36:17.156 GET DeviceState ==> ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a NotConnected error (0x00000407) for client transaction: 67890, server transaction: 96. Error message: The telescope is not connected
+ 
+15:36:17.156 GET DeviceState ==> ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a NotConnected error (0x00000407) for client transaction: 67890, server transaction: 97. Error message: The telescope is not connected
+ 
+15:36:17.156 GET DeviceState ==> ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a NotConnected error (0x00000407) for client transaction: 67890, server transaction: 98. Error message: The telescope is not connected
+ 
+15:36:17.156 PUT FindHome ==> Good ID name casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 897. Error message: The mount is unparking
+ 
+15:36:17.156 PUT FindHome ==> Good ID casing + extra parameter - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 898. Error message: The mount is unparking
+ 
+15:36:17.156 PUT FindHome ==> Bad ClientID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 899. Error message: The mount is unparking
+ 
+15:36:17.156 PUT FindHome ==> Bad ClientTransactionID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 0, server transaction: 900. Error message: The mount is unparking
+ 
+15:36:17.156 PUT FindHome ==> ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 901. Error message: The mount is unparking
+ 
+15:36:17.156 PUT FindHome ==> ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 902. Error message: The mount is unparking
+ 
+15:36:17.156 PUT FindHome ==> ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 903. Error message: The mount is unparking
+ 
+15:36:17.157 PUT FindHome ==> ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 67890, server transaction: 904. Error message: The mount is unparking
+ 
+15:36:17.157 PUT FindHome ==> ClientTransactionID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 0, server transaction: 905. Error message: The mount is unparking
+ 
+15:36:17.157 PUT FindHome ==> ClientTransactionID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 0, server transaction: 906. Error message: The mount is unparking
+ 
+15:36:17.157 PUT FindHome ==> ClientTransactionID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 0, server transaction: 907. Error message: The mount is unparking
+ 
+15:36:17.157 PUT FindHome ==> ClientTransactionID is a string - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidOperationException error (0x0000040B) for client transaction: 0, server transaction: 908. Error message: The mount is unparking
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> Parameters Azimuth and Altitude (Good casing) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1138. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> Parameters Azimuth and Altitude (Good casing with extra parameter) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1140. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> Bad ClientID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1144. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> Bad ClientTransactionID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1146. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1148. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1149. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1150. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1151. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientTransactionID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1152. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientTransactionID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1153. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientTransactionID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1154. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAzAsync ==> ClientTransactionID is a string - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1155. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> Parameters Azimuth and Altitude (Good casing) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1159. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> Parameters Azimuth and Altitude (Good casing with extra parameter) - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1161. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> Bad ClientID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1165. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> Bad ClientTransactionID casing - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1167. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1169. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1170. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1171. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientID is not numeric - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 67890, server transaction: 1172. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientTransactionID is empty - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1173. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientTransactionID is white space - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1174. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientTransactionID is negative - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1175. Error message: Azimuth 360.0 is outside [0, 360)
+ 
+15:36:17.157 PUT SlewToAltAz ==> ClientTransactionID is a string - Received HTTP status 200 (OK) as expected but the device reported an ASCOM error: 
+  Response: Device returned a InvalidValue error (0x00000401) for client transaction: 0, server transaction: 1176. Error message: Azimuth 360.0 is outside [0, 360)
+ 
